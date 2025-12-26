@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLOv8 Object Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .video-container {
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            position: relative;
+        }
+
+        #videoFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .placeholder {
+            position: absolute;
+            text-align: center;
+            color: #fff;
+            font-size: 1.2em;
+            z-index: 10;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-panel {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #667eea;
+        }
+
+        .control-panel h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-stop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stats-panel {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #4CAF50;
+        }
+
+        .stats-panel h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .detections-panel {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #ff9800;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .detections-panel h3 {
+            color: #ff9800;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .detection-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #ff9800;
+            font-size: 0.9em;
+        }
+
+        .detection-item strong {
+            color: #333;
+        }
+
+        .detection-item .confidence {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.running {
+            background: #4CAF50;
+            animation: pulse 1s infinite;
+        }
+
+        .status-indicator.stopped {
+            background: #f5576c;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .video-container {
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 YOLOv8 Object Detection</h1>
+            <p>Real-time object detection powered by YOLOv8</p>
+        </div>
+
+        <div class="content">
+            <div class="video-container" id="videoContainer">
+                <div class="placeholder" id="placeholder">
+                    👆 Click "Start Detection" to begin
+                </div>
+                <div class="loading" id="loading" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
+                <img id="videoFeed" src="" alt="Video Feed" style="display: none;">
+            </div>
+
+            <div class="sidebar">
+                <div class="control-panel">
+                    <h3>Controls</h3>
+                    <button class="btn btn-start" id="startBtn" onclick="startDetection()">▶ Start Detection</button>
+                    <button class="btn btn-stop" id="stopBtn" onclick="stopDetection()" disabled>⏹ Stop Detection</button>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <span class="status-indicator stopped" id="statusIndicator"></span>
+                        <span id="statusText">Stopped</span>
+                    </div>
+                </div>
+
+                <div class="stats-panel">
+                    <h3>📊 Statistics</h3>
+                    <div class="stat-item">
+                        <div class="stat-label">Objects Detected</div>
+                        <div class="stat-value" id="objectCount">0</div>
+                    </div>
+                </div>
+
+                <div class="detections-panel">
+                    <h3>🔍 Detections</h3>
+                    <div id="detectionsList">
+                        <p style="color: #999; text-align: center;">No detections yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let statsInterval = null;
+
+        async function startDetection() {
+            try {
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('placeholder').style.display = 'none';
+
+                const response = await fetch('/start');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    isRunning = true;
+
+                    // Start the video feed
+                    const videoFeed = document.getElementById('videoFeed');
+                    videoFeed.style.display = 'block';
+                    videoFeed.src = '/video_feed?t=' + new Date().getTime();
+
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('statusIndicator').classList.remove('stopped');
+                    document.getElementById('statusIndicator').classList.add('running');
+                    document.getElementById('statusText').textContent = 'Running';
+
+                    // Give stream 2 seconds to start before hiding loading
+                    setTimeout(() => {
+                        document.getElementById('loading').style.display = 'none';
+                    }, 2000);
+
+                    // Start updating stats
+                    if (statsInterval) clearInterval(statsInterval);
+                    statsInterval = setInterval(updateStats, 500);
+
+                    console.log('Detection started successfully');
+                } else {
+                    alert('Error: ' + data.message);
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('placeholder').style.display = 'block';
+                }
+            } catch (error) {
+                alert('Error starting detection: ' + error);
+                console.error(error);
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('placeholder').style.display = 'block';
+            }
+        }
+
+        async function stopDetection() {
+            try {
+                const response = await fetch('/stop');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    isRunning = false;
+                    document.getElementById('videoFeed').src = '';
+                    document.getElementById('videoFeed').style.display = 'none';
+                    document.getElementById('placeholder').style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    document.getElementById('statusIndicator').classList.remove('running');
+                    document.getElementById('statusIndicator').classList.add('stopped');
+                    document.getElementById('statusText').textContent = 'Stopped';
+
+                    document.getElementById('objectCount').textContent = '0';
+                    document.getElementById('detectionsList').innerHTML = '<p style="color: #999; text-align: center;">No detections yet</p>';
+
+                    if (statsInterval) clearInterval(statsInterval);
+                    console.log('Detection stopped');
+                }
+            } catch (error) {
+                alert('Error stopping detection: ' + error);
+                console.error(error);
+            }
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch('/stats');
+                const stats = await response.json();
+
+                document.getElementById('objectCount').textContent = stats.total_objects;
+
+                // Update detections list
+                const detectionsList = document.getElementById('detectionsList');
+                if (stats.last_detections.length === 0) {
+                    detectionsList.innerHTML = '<p style="color: #999; text-align: center;">No detections yet</p>';
+                } else {
+                    detectionsList.innerHTML = stats.last_detections.map(det =>
+                        `<div class="detection-item">
+                            <strong>${det.class}</strong><br>
+                            Confidence: <span class="confidence">${(det.confidence * 100).toFixed(1)}%</span>
+                        </div>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+    </script>
+</body>
+</html>

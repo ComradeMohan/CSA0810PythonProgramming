@@ -1,0 +1,93 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      :root {
+        --bg-2: #0f172a;
+        --grid: #1e293b;
+        --text-heading: #f1f5f9;
+        --text-muted: #94a3b8;
+        --accent-1: #2dd4bf;
+        --accent-2: #14b8a6;
+        --accent-3: #5eead4;
+        --card-bg: #0f172a;
+        --card-bg-opacity: 0.35;
+        --card-stroke-opacity: 0.55;
+        --glow-opacity: 0.25;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg-2: #eef2f6;
+          --grid: #dbe3ea;
+          --text-heading: #0f172a;
+          --text-muted: #475569;
+          --accent-1: #0d9488;
+          --accent-2: #0f766e;
+          --accent-3: #0d9488;
+          --card-bg: #ffffff;
+          --card-bg-opacity: 0.75;
+          --card-stroke-opacity: 0.65;
+          --glow-opacity: 0.12;
+        }
+      }
+      .bg-fill { fill: var(--bg-2); }
+      .grid-fill { stroke: var(--grid); }
+      .glow { fill: var(--accent-1); opacity: var(--glow-opacity); }
+      .corner-tick { stroke: var(--accent-1); }
+      .box-strong { stroke: var(--accent-1); }
+      .box-mid { stroke: var(--accent-2); }
+      .box-soft { stroke: var(--accent-3); }
+      .label-strong { fill: var(--accent-1); }
+      .label-mid { fill: var(--accent-2); }
+      .label-soft { fill: var(--accent-3); }
+      .card-bg { fill: var(--card-bg); fill-opacity: var(--card-bg-opacity); }
+      .card-stroke { stroke: var(--accent-1); stroke-opacity: var(--card-stroke-opacity); }
+      .eyebrow { fill: var(--accent-1); }
+      .heading { fill: var(--text-heading); }
+      .subtext { fill: var(--text-muted); }
+      .grad-text { fill: url(#tealText); }
+    </style>
+    <linearGradient id="tealText" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+    <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse">
+      <path d="M 34 0 L 0 0 0 34" fill="none" class="grid-fill" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="320" class="bg-fill"/>
+  <rect width="1200" height="320" fill="url(#grid)"/>
+  <circle cx="1030" cy="70" r="180" class="glow"/>
+  <circle cx="150" cy="270" r="140" class="glow"/>
+
+  <!-- corner blueprint ticks -->
+  <g class="corner-tick" stroke-width="1.5" opacity="0.7">
+    <path d="M24 24 L24 56 M24 24 L56 24"/>
+    <path d="M1176 24 L1176 56 M1176 24 L1144 24"/>
+    <path d="M24 296 L24 264 M24 296 L56 296"/>
+    <path d="M1176 296 L1176 264 M1176 296 L1144 296"/>
+  </g>
+
+  <!-- scanning bounding boxes motif -->
+  <g opacity="0.9">
+    <rect x="860" y="60" width="120" height="90" rx="4" fill="none" class="box-strong" stroke-width="2"/>
+    <rect x="856" y="56" width="16" height="16" fill="none" class="box-strong" stroke-width="2"/>
+    <text x="864" y="52" class="label-strong" font-family="JetBrains Mono, monospace" font-size="12">person 0.94</text>
+
+    <rect x="970" y="150" width="90" height="70" rx="4" fill="none" class="box-mid" stroke-width="2" opacity="0.8"/>
+    <text x="974" y="146" class="label-mid" font-family="JetBrains Mono, monospace" font-size="11" opacity="0.85">car 0.88</text>
+
+    <rect x="800" y="180" width="70" height="60" rx="4" fill="none" class="box-soft" stroke-width="1.5" opacity="0.6"/>
+    <text x="804" y="176" class="label-soft" font-family="JetBrains Mono, monospace" font-size="10" opacity="0.7">dog 0.81</text>
+  </g>
+
+  <!-- glass card -->
+  <rect x="48" y="56" width="700" height="210" rx="16" class="card-bg card-stroke" stroke-width="1.5"/>
+
+  <text x="80" y="120" font-family="JetBrains Mono, monospace" font-size="14" class="eyebrow" letter-spacing="3">CV / OBJECT DETECTION</text>
+
+  <text x="78" y="172" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="700" class="heading">Various Object</text>
+  <text x="78" y="216" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="700" class="grad-text">Identification</text>
+
+  <text x="80" y="248" font-family="JetBrains Mono, monospace" font-size="14" class="subtext">YOLOv8 · OpenCV · Flask — real-time detection, in your browser</text>
+</svg>
